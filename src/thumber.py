@@ -87,10 +87,13 @@ def signal_handler(sig, frame):
     thumb_logger.info("Exiting...")
     sys.exit(0)
 
-thumb_logger = logger.Logger("thumblogger")
-
-if __name__ == "__main__":
+def main():
+    '''Entry point'''
+    thumb_logger = logger.Logger("thumblogger")
     signal.signal(signal.SIGINT, signal_handler)
     thumb_drive_detector = ThumbDriveDetector(thumb_logger)
     thumb_logger.info("Started thumber")
     thumb_drive_detector.detect()
+
+if __name__ == "__main__":
+    main()
