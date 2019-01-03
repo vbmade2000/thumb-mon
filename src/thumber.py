@@ -3,6 +3,7 @@ from dbus import SystemBus, Interface
 from dbus.mainloop.glib import DBusGMainLoop
 import gobject
 
+from src import logger
 
 class ThumbDriveDetector(object):
     '''
@@ -64,7 +65,9 @@ class ThumbDriveDetector(object):
         loop = gobject.MainLoop()
         loop.run()
 
+thumb_logger = logger.Logger("thumblogger")
 
 if __name__ == "__main__":
     thumb_drive_detector = ThumbDriveDetector()
+    thumb_logger.info("Started thumber")
     thumb_drive_detector.detect()
