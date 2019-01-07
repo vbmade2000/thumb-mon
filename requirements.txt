@@ -1,0 +1,2 @@
+slip.dbus==0.4.0
+pygobject==3.22.0
