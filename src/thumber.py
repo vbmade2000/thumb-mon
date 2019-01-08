@@ -4,7 +4,7 @@ import signal
 from dbus import SystemBus, Interface
 from dbus.mainloop.glib import DBusGMainLoop
 import gobject
-from src import logger
+from src import logger, notifier
 
 
 class ThumbDriveDetector(object):
@@ -12,7 +12,7 @@ class ThumbDriveDetector(object):
        Class wraps functionality to detect thumb drive.
     '''
 
-    def __init__(self, logger):
+    def __init__(self, logger, notifier):
         '''
             Initialize class
         '''
@@ -27,7 +27,9 @@ class ThumbDriveDetector(object):
         # Create instance of main event loop and run it
         self._loop = gobject.MainLoop()
         self._logger = logger
+        self._notifier = notifier
         self._logger.debug("Instantiated ThumbDriveDetector")
+
 
     def _is_removable_drive(self, data):
         '''
@@ -52,8 +54,7 @@ class ThumbDriveDetector(object):
             if self._is_removable_drive(
                     interfaces_and_properties[self._drive_interface]):
                 self._logger.debug("Detected removable drive")
-                # Send email
-                pass
+                self._notifier.notify("Test data")
 
     def detect(self):
         '''Starts main loop to detect thumb drive'''
@@ -90,8 +91,9 @@ def signal_handler(sig, frame):
 def main():
     '''Entry point'''
     thumb_logger = logger.Logger("thumblogger")
+    event_notifier = notifier.Notifier(thumb_logger, None)
     signal.signal(signal.SIGINT, signal_handler)
-    thumb_drive_detector = ThumbDriveDetector(thumb_logger)
+    thumb_drive_detector = ThumbDriveDetector(thumb_logger, event_notifier)
     thumb_logger.info("Started thumber")
     thumb_drive_detector.detect()
 
