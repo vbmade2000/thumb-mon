@@ -1,10 +1,14 @@
 """Module contains a main entry point to run application"""
 
+import os
+
 from dbus import SystemBus, Interface
 from dbus.mainloop.glib import DBusGMainLoop
 import gobject
 
-from src import logger, notifier
+from src import logger
+from src import notifier
+from src.utils import config_reader
 
 
 class ThumbDriveDetector(object):
@@ -99,14 +103,29 @@ class ThumbDriveDetector(object):
 
 def main():
     """Entry point"""
+    # TODO: Send logs with print statement in exception handling
     try:
+
+        # Create config reader
+        # TODO: Get conf filepath from command line args
+        config_file_name = "thumber.conf"
+        config_file_path = os.path.join(os.path.dirname(os.path.realpath(__file__)), config_file_name)
+        cfg_reader = config_reader.ConfigReader(config_file_path)
+
+        # TODO: Make logging level configurable
+        # TODO: Make logging available to stdout in case someone runs app
+        #       directly instead of a systemd service
         thumb_logger = logger.Logger("thumblogger")
-        event_notifier = notifier.Notifier(thumb_logger, None)
+
+        # Create notifier
+        event_notifier = notifier.Notifier(cfg_reader, logger=thumb_logger)
         thumb_drive_detector = ThumbDriveDetector(thumb_logger, event_notifier)
         thumb_logger.info("Started thumber")
         thumb_drive_detector.detect()
     except KeyboardInterrupt as _:
         print "User requested exit. Exiting..."
+    except config_reader.ConfigParser.NoSectionError as no_section_error:
+        print "Config: section not found {0}".format(no_section_error.section)
     except Exception as exception:
         print "Error: {0}".format(exception)
 
