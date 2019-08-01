@@ -11,11 +11,11 @@ class AbstractNotifer(object):
 
     __metaclass__ = ABCMeta
 
-    def __init__(self):
+    def __init__(self, config):
         """Initialize class"""
-        pass
+        self._config = config
 
     @abstractmethod
-    def send(self):
+    def send(self, alert_data):
         """Sends notification to particular channel implemented by plugin"""
         raise NotImplementedError
