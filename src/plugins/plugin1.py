@@ -1,10 +1,10 @@
 """Module contains a sample plugin that just prints to stdout
 """
 
-from src.plugins.base_plugin import AbstractNotifer
+from src.plugins.base_plugin import AbstractNotifier
 
 
-class Plugin1(AbstractNotifer):
+class Plugin1(AbstractNotifier):
     """Sample plugin class that prints notification to stdout"""
 
     def __init__(self, config):

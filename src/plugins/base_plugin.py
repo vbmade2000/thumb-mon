@@ -6,7 +6,7 @@ from abc import ABCMeta
 from abc import abstractmethod
 
 
-class AbstractNotifer(object):
+class AbstractNotifier(object):
     """Serves as a base class for all plugins"""
 
     __metaclass__ = ABCMeta
