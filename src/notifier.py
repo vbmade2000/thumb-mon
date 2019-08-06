@@ -25,6 +25,7 @@ class Notifier(object):
             self.CORE_SETTINGS_KEY, "output_plugins")
         self._loaded_plugin = list()
         self._load_plugins()
+        self._start_plugins()
 
     def _load_plugins(self):
         """Imports plugin modules and instantiates plugin class"""
@@ -54,7 +55,8 @@ class Notifier(object):
                 self._logger.info(
                     "Notifier: instantiated plugin {0}".format(plugin_name))
 
-                append_instance(class_instance(self._config))
+                # Create an instance of loaded class and store it for further use
+                append_instance(class_instance(config=self._config, logger=self._logger))
 
             except ImportError as _:
                 # Handle ImportError here as we want to continue execution
@@ -64,10 +66,12 @@ class Notifier(object):
                 # Raise any other exception
                 raise exception
 
+    def _start_plugins(self):
+        """Starts all the loaded plugins"""
+        for loaded_plugin in self._loaded_plugin:
+            loaded_plugin.setDaemon(True)
+            loaded_plugin.start()
+
     def notify(self, alert_data):
         """Sends notifications using plugins"""
         self._logger.info("Sending notifications")
-
-        # TODO: Use threads instead of going sequentially
-        for loaded_plugin in self._loaded_plugin:
-            loaded_plugin.send(alert_data)

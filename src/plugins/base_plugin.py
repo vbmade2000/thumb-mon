@@ -4,18 +4,30 @@ plugins.
 
 from abc import ABCMeta
 from abc import abstractmethod
+import threading
 
 
-class AbstractNotifier(object):
+class AbstractNotifier(threading.Thread):
     """Serves as a base class for all plugins"""
 
     __metaclass__ = ABCMeta
 
-    def __init__(self, config):
+    def __init__(self, config, logger, msg_queue):
         """Initialize class"""
+        super(AbstractNotifier, self).__init__()
         self._config = config
+        self._msg_queue = msg_queue
+        self._logger = logger
+
+    def _read_my_queue(self):
+        msg = None
+        try:
+            msg = self._msg_queue.get()
+        except Exception as exception:
+            self._logger.exception(exception)
+        return msg
 
     @abstractmethod
-    def send(self, alert_data):
-        """Sends notification to particular channel implemented by plugin"""
+    def run(self):
+        """Runs the thread"""
         raise NotImplementedError

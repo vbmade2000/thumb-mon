@@ -1,16 +1,21 @@
 """Module contains a main entry point to run application"""
 
 import os
+import signal
 
 from dbus import SystemBus, Interface
 from dbus.mainloop.glib import DBusGMainLoop
+import dbus
 import gobject
 
 from src import logger
 from src import notifier
 from src.utils import config_reader
 
+thumb_logger = logger.Logger("thumblogger")
 
+
+# TODO: Move ThumbDriveDetector class to its own file
 class ThumbDriveDetector(object):
     """
        Class wraps functionality to detect thumb drive.
@@ -20,6 +25,10 @@ class ThumbDriveDetector(object):
         """
             Initialize class
         """
+        super(ThumbDriveDetector, self).__init__()
+
+        # Unblock main thread by calling this method.
+        dbus.mainloop.glib.threads_init()
 
         # Set global default main loop
         DBusGMainLoop(set_as_default=True)
@@ -30,8 +39,11 @@ class ThumbDriveDetector(object):
         self._drive_interface = "org.freedesktop.UDisks2.Drive"
         self._bus = SystemBus()
 
+        # Unblock main thread by calling this method.
+        gobject.threads_init()
         # Create instance of main event loop and run it
         self._loop = gobject.MainLoop()
+
         self._logger = logger_instance
         self._notifier = notifier_instance
         self._logger.debug("Instantiated ThumbDriveDetector")
@@ -71,10 +83,9 @@ class ThumbDriveDetector(object):
                 self._logger.debug("Detected removable drive")
                 self._notifier.notify("Test data")
 
-    def detect(self):
+    def _run(self):
         """Starts main loop to detect thumb drive
         """
-
         # Get UDisk2 DBUS object
         disk_systemd = self._bus.get_object(
             self._udisk2_interface, self._object_path)
@@ -92,7 +103,11 @@ class ThumbDriveDetector(object):
 
         # Run main loop
         self._logger.info("Starting main loop")
+
         self._loop.run()
+
+    def detect(self):
+        self._run()
 
     def stop(self):
         """Stops the main loop
@@ -101,9 +116,16 @@ class ThumbDriveDetector(object):
         self._loop.quit()
 
 
+def sigterm_handler(signal, _):
+    thumb_logger.info("Received SIGTERM, exiting...")
+    exit(0)
+
+
 def main():
     """Entry point"""
+    # TODO: Put more debug statements
     # TODO: Send logs with print statement in exception handling
+    signal.signal(signal.SIGTERM, sigterm_handler)
     try:
 
         # Create config reader
@@ -115,15 +137,16 @@ def main():
         # TODO: Make logging level configurable
         # TODO: Make logging available to stdout in case someone runs app
         #       directly instead of a systemd service
-        thumb_logger = logger.Logger("thumblogger")
 
         # Create notifier
         event_notifier = notifier.Notifier(cfg_reader, logger=thumb_logger)
         thumb_drive_detector = ThumbDriveDetector(thumb_logger, event_notifier)
-        thumb_logger.info("Started thumber")
         thumb_drive_detector.detect()
+        thumb_logger.info("Started thumber")
+
+        # TODO: Convert print statements to logs
     except KeyboardInterrupt as _:
-        print "User requested exit. Exiting..."
+        print "\rUser requested exit. Exiting..."
     except config_reader.ConfigParser.NoSectionError as no_section_error:
         print "Config: section not found {0}".format(no_section_error.section)
     except Exception as exception:
