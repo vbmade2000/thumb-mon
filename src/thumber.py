@@ -12,6 +12,7 @@ from src import logger
 from src import notifier
 from src.utils import config_reader
 
+
 thumb_logger = logger.Logger("thumblogger")
 
 
@@ -26,6 +27,8 @@ class ThumbDriveDetector(object):
             Initialize class
         """
         super(ThumbDriveDetector, self).__init__()
+        self._logger = logger_instance
+        self._logger.debug("ThumbDriveDetector.__init__ called")
 
         # Unblock main thread by calling this method.
         dbus.mainloop.glib.threads_init()
@@ -44,7 +47,6 @@ class ThumbDriveDetector(object):
         # Create instance of main event loop and run it
         self._loop = gobject.MainLoop()
 
-        self._logger = logger_instance
         self._notifier = notifier_instance
         self._logger.debug("Instantiated ThumbDriveDetector")
 
@@ -64,6 +66,7 @@ class ThumbDriveDetector(object):
         Returns:
             bool: True if it is removable, False otherwise.
         """
+        self._logger.debug("ThumbDriveDetector._is_removable_drive called")
         removable = data.get("Removable", False)
         return removable
 
@@ -76,11 +79,13 @@ class ThumbDriveDetector(object):
             interfaces_and_properties (dict): Data related to device received
                 from DBUS.
         """
-        self._logger.debug("Interface added")
+        #  TODO: Create a separate class to store drive information
+        self._logger.debug("ThumbDriveDetector._interface_added called")
         if interfaces_and_properties.get(self._drive_interface) is not None:
             if self._is_removable_drive(
                     interfaces_and_properties[self._drive_interface]):
                 self._logger.debug("Detected removable drive")
+                self._logger.debug(interfaces_and_properties)
                 self._notifier.notify("Test data")
 
     def _run(self):
@@ -132,6 +137,7 @@ def main():
         # TODO: Get conf filepath from command line args
         config_file_name = "thumber.conf"
         config_file_path = os.path.join(os.path.dirname(os.path.realpath(__file__)), config_file_name)
+
         cfg_reader = config_reader.ConfigReader(config_file_path)
 
         # TODO: Make logging level configurable
@@ -146,6 +152,7 @@ def main():
 
         # TODO: Convert print statements to logs
     except KeyboardInterrupt as _:
+        # NOTE: \r is need to remove ^C characters
         print "\rUser requested exit. Exiting..."
     except config_reader.ConfigParser.NoSectionError as no_section_error:
         print "Config: section not found {0}".format(no_section_error.section)

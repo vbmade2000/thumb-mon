@@ -27,7 +27,16 @@ class AbstractNotifier(threading.Thread):
             self._logger.exception(exception)
         return msg
 
+    def _is_my_queue_empty(self):
+        """Returns True/False based on empty status of _msg_queue"""
+        q = self._msg_queue
+        return q.empty()
+
     @abstractmethod
     def run(self):
         """Runs the thread"""
         raise NotImplementedError
+
+    def get_name(self):
+        """Returns a name of plugin"""
+        return self.name
