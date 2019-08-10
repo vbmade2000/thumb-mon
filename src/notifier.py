@@ -14,6 +14,7 @@ class Notifier(object):
 
     def __init__(self, config, logger):
         """Initializes class. Loads all configured plugins"""
+        self._logger = logger
         self._logger.debug("Notifier.__init__ called")
 
         # Create a plugins directory from the current file path
@@ -22,7 +23,6 @@ class Notifier(object):
 
         self._config = config
         self._loaded_plugins = None
-        self._logger = logger
         self._plugin_names = self._config.get_value_list(
             self.CORE_SETTINGS_KEY, "output_plugins")
         self._loaded_plugin = list()
