@@ -12,7 +12,8 @@ class ConfigReader(object):
         """Initialize ConfigReader
         """
         self._config_parser = ConfigParser.RawConfigParser()
-        self._config_parser.read(config_filename)
+        self._config_file_descriptor = open(config_filename)
+        self._config_parser.readfp(self._config_file_descriptor)
 
     def get_value(self, section, key):
         """Read a single value of a <key> from a <section>.
@@ -46,3 +47,5 @@ class ConfigReader(object):
             values = [val.strip() for val in raw_values]
         return values
 
+    def get_config_file_descriptor(self):
+        return self._config_file_descriptor

@@ -7,6 +7,7 @@ from dbus import SystemBus, Interface
 from dbus.mainloop.glib import DBusGMainLoop
 import dbus
 import gobject
+import daemon
 
 from src import logger
 from src import notifier
@@ -121,25 +122,18 @@ class ThumbDriveDetector(object):
         self._loop.quit()
 
 
-def sigterm_handler(signal, _):
+def signal_handler(signal, _):
     thumb_logger.info("Received SIGTERM, exiting...")
     exit(0)
 
 
-def main():
+def main(cfg_reader):
     """Entry point"""
     # TODO: Put more debug statements
     # TODO: Send logs with print statement in exception handling
-    signal.signal(signal.SIGTERM, sigterm_handler)
+    # signal.signal(signal.SIGTERM, signal_handler)
     try:
 
-        # Create config reader
-        # TODO: Get conf filepath from command line args
-        config_file_name = "thumber.conf"
-        config_file_path = os.path.join(
-            os.path.dirname(os.path.realpath(__file__)), config_file_name)
-
-        cfg_reader = config_reader.ConfigReader(config_file_path)
 
         # TODO: Make logging level configurable
         # TODO: Make logging available to stdout in case someone runs app
@@ -162,5 +156,28 @@ def main():
         thumb_logger.error("Error: {0}".format(exception))
 
 
+def get_config_reader():
+    # Create config reader
+    # TODO: Get conf filepath from command line args. If it is supplied
+    #       from command line then give it priority over file present in /etc.
+    try:
+        config_file_name = "thumber.conf"
+        config_file_path = os.path.join(
+            os.path.dirname(os.path.realpath(__file__)), config_file_name)
+
+        cfg_reader = config_reader.ConfigReader(config_file_path)
+    except Exception as e:
+        thumb_logger.error(e)
+    return cfg_reader
+
+
 if __name__ == "__main__":
-    main()
+    # Application demonizing process closes all the open file descriptors.
+    # Here we have config file descriptor. So we moved out config reading
+    # logic as we needed a config file descriptor to be passed in
+    # DaemonContext context manager to prevent it from closing.
+    config_reader = get_config_reader()
+    with daemon.DaemonContext(
+            files_preserve=[config_reader.get_config_file_descriptor()],
+            signal_map={signal.SIGTERM: signal_handler}):
+        main(config_reader)
