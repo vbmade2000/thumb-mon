@@ -136,7 +136,8 @@ def main():
         # Create config reader
         # TODO: Get conf filepath from command line args
         config_file_name = "thumber.conf"
-        config_file_path = os.path.join(os.path.dirname(os.path.realpath(__file__)), config_file_name)
+        config_file_path = os.path.join(
+            os.path.dirname(os.path.realpath(__file__)), config_file_name)
 
         cfg_reader = config_reader.ConfigReader(config_file_path)
 
@@ -150,14 +151,15 @@ def main():
         thumb_drive_detector.detect()
         thumb_logger.info("Started thumber")
 
-        # TODO: Convert print statements to logs
     except KeyboardInterrupt as _:
-        # NOTE: \r is need to remove ^C characters
-        print "\rUser requested exit. Exiting..."
+        # NOTE: \r can be used to remove ^C characters when printed to STDOUT.
+        #       In syslog it prints like "[32B blob data]".
+        thumb_logger.info("User requested exit. Exiting...")
     except config_reader.ConfigParser.NoSectionError as no_section_error:
-        print "Config: section not found {0}".format(no_section_error.section)
+        thumb_logger.error(
+            "Config: section not found {0}".format(no_section_error.section))
     except Exception as exception:
-        print "Error: {0}".format(exception)
+        thumb_logger.error("Error: {0}".format(exception))
 
 
 if __name__ == "__main__":
