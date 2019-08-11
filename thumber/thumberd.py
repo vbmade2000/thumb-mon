@@ -9,9 +9,9 @@ import dbus
 import gobject
 import daemon
 
-from src import logger
-from src import notifier
-from src.utils import config_reader
+from thumber import logger
+from thumber import notifier
+from thumber.utils import config_reader
 
 
 thumb_logger = logger.Logger("thumblogger")

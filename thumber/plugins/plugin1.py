@@ -3,7 +3,7 @@
 
 import time
 
-from src.plugins.base_plugin import AbstractNotifier
+from thumber.plugins.base_plugin import AbstractNotifier
 
 
 class Plugin1(AbstractNotifier):

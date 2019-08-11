@@ -48,7 +48,7 @@ class Notifier(object):
                 #       case where plugin uses a multiple modules and so it
                 #       is contained in a separate directory instead of single
                 #       file.
-                plugin_path = "src.plugins.{0}".format(plugin_name)
+                plugin_path = "thumber.plugins.{0}".format(plugin_name)
                 imported_module = importlib.import_module(plugin_path)
                 self._logger.info(
                     "Notifier: loaded plugin {0}".format(plugin_name))
