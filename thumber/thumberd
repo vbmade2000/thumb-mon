@@ -1,0 +1,5 @@
+#!/usr/bin/python2.7
+from thumber import thumbermain
+
+if __name__ == "__main__":
+    thumbermain.main()
