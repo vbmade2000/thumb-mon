@@ -122,11 +122,6 @@ class ThumbDriveDetector(object):
         self._loop.quit()
 
 
-def signal_handler(signal, _):
-    thumb_logger.info("Received SIGTERM, exiting...")
-    exit(0)
-
-
 def get_config_reader():
     # Create config reader
     # TODO: Get conf filepath from command line args. If it is supplied
@@ -140,6 +135,28 @@ def get_config_reader():
     except Exception as e:
         thumb_logger.error(e)
     return cfg_reader
+
+
+def notify_systemd(state):
+    try:
+        from systemd.daemon import notify
+        notify(state)
+    except Exception as _:
+        thumb_logger.info("thumber is not using systemd, ignoring.")
+
+
+def notify_ready_to_systemd():
+    notify_systemd("READY=1")
+
+
+def notify_stop_to_systemd():
+    notify_systemd("STOPPING=1")
+
+
+def signal_handler(signal, _):
+    notify_stop_to_systemd()
+    thumb_logger.info("Received SIGTERM, exiting...")
+    exit(0)
 
 
 def main():
@@ -163,9 +180,8 @@ def main():
             # Create notifier
             event_notifier = notifier.Notifier(cfg_reader, logger=thumb_logger)
             thumb_drive_detector = ThumbDriveDetector(thumb_logger, event_notifier)
+            notify_ready_to_systemd()
             thumb_drive_detector.detect()
-            thumb_logger.info("Started thumber")
-
         except KeyboardInterrupt as _:
             # NOTE: \r can be used to remove ^C characters when printed to STDOUT.
             #       In syslog it prints like "[32B blob data]".

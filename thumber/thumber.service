@@ -1,0 +1,12 @@
+[Unit]
+Description=thumber daemon to detect thumb drives
+
+
+[Service]
+Type=notify
+NotifyAccess=all
+ExecStart=/usr/bin/thumberd
+Restart=on-failure
+
+[Install]
+WantedBy=multi-user.target
