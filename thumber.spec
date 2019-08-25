@@ -2,13 +2,13 @@
 
 
 Name: thumber
-Version: 1
+Version: %{version}
 Release: 0
 Summary: Thumb drive detector
 
 License: GPL
 URL: https://github.com/vbmade2000/thumber
-BuildArch:      noarch
+BuildArch: noarch
 Source0: thumber-1.0.tar.gz
 # BuildRoot:  %(mktemp -ud %{_tmppath}/%{name}-%{version}-XXXXX)
 
